@@ -45,10 +45,10 @@ void loop(){
   }
   
   //decharge the glove
-  if(sensorValue < 700 && power != 10 && power >= 0){
-     digitalWrite(ledPins[power], LOW);
+  if(sensorValue < 700 && power != 10 && power > 0){
      tone(6, (440*power)/2, 100);
      power--;
+     digitalWrite(ledPins[power], LOW);
      delay(50);
   }
   
@@ -100,3 +100,4 @@ void writeAll(boolean state){
     digitalWrite(ledPins[thisLed], state);
     }  
 }
+
