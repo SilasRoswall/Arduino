@@ -1,12 +1,22 @@
-#include <tone.h>
 
+#include <tone.h>
+#include <IRremote.h>
+//Pin 6 is used for sound.
+//Pin 3 is used for IR sender.
+//A1 is used for presure plate.
+
+IRsend irsend;
 const int ledCount = 10;
 int power = 0;
 int hold = 0;
 
-
+//---- Connect the LED-BAR[10] from low to high.
 int ledPins[] = { 
- 4, 5, A1, 7, 8, 9, 10, 11 ,12 ,13 };   // an array of pin numbers to which LEDs are attached
+ // 4, 5, 7, 8, 9, 10, 16 ,14 ,15, A0 };   // an array of pin numbers to which LEDs are attached
+4, 5, 7, 8, 9, 15, A0, 14, 16, 10 };
+
+// raw poweron signal
+unsigned int powerOn[148] = {4400,4250,550,1600,600,1550,600,1550,550,1600,550,500,550,550,550,1550,600,500,550,500,600,500,550,500,600,450,600,1550,600,1550,550,500,600,1550,550,550,550,500,600,500,550,500,550,500,600,500,550,1600,550,1550,600,1550,600,1550,600,1550,600,1550,550,1600,550,1550,600,500,550,500,600,500,550,500,550,550,550,500,600,450,600,500,550,500,550,1600,550,1600,550,500,600,500,550,1600,550,500,550,500,550,550,550,500,600,500,550,500,600,450,600,500,550,500,550,550,550,500,600,1550,600,450,600,500,550,500,550,550,550,500,600,450,600,500,550,500,600,1550,550,500,600,500,600,1550,550,500,600,500,550,500,550,500,600};
 
 
 void setup() {
@@ -21,10 +31,16 @@ void setup() {
 
 void loop(){
    // Read the input on analog pin 0:
-  int sensorValue = analogRead(A0);
+  int sensorValue = analogRead(A1);
 
+  digitalWrite(3, HIGH);
+  delay(2000);
+  digitalWrite(3, LOW);
+  irsend.sendRaw(powerOn,148,38);
+   delay(2000);
+    
   //charge the glove
-  if(sensorValue > 800 && power < 10){
+  if(sensorValue < 800 && power < 10){
      digitalWrite(ledPins[power], HIGH);
      tone(6, (440*power)/2, 100);
      power++;
@@ -32,27 +48,27 @@ void loop(){
   }
   
   //Full charge sound.
-  if(power >= 10 && sensorValue > 800){
+  if(power >= 10 && sensorValue < 800){
      tone(6, 440*10/2,400);
      hold++;
      delay(400);
   }
   
   //shot
-  if(sensorValue < 700 && power == 10){
+  if(sensorValue > 700 && power == 10){
     shoot();
     delay(2500);
   }
   
   //decharge the glove
-  if(sensorValue < 700 && power != 10 && power > 0){
+  if(sensorValue > 700 && power != 10 && power > 0){
      tone(6, (440*power)/2, 100);
      power--;
      digitalWrite(ledPins[power], LOW);
      delay(50);
   }
   
-  //overload
+  //call the overload method
   if(hold >= 5){
      overload();
   } 
@@ -67,13 +83,15 @@ void shoot () {
   for(int thisLed = 0; thisLed < ledCount; thisLed++){
     digitalWrite(ledPins[thisLed], LOW);
   }
-  digitalWrite(3, HIGH);
-  delay(300);
-  digitalWrite(3, LOW);
+  //digitalWrite(3, HIGH);
+  //delay(300);
+  //digitalWrite(3, LOW);
+
 }
 
 
-//overloading 
+//overloading will be reset power and hold, 
+//and then play a anoying sound, turn of the lights and blink, before ready to use again.
 void overload(){
     hold = 0;
     power = 0;
@@ -101,3 +119,27 @@ void writeAll(boolean state){
     }  
 }
 
+
+
+
+
+
+
+
+
+
+
+/*
+void loop() {
+
+	while(!Serial.available());
+	char rx=Serial.read();
+	unsigned int rx_int=(unsigned int)rx;
+
+	Serial.print("Sending ");
+	Serial.println(rx);
+	irsend.sendSony(rx_int,32); //8 bits
+	//irsend.sendRaw(&rx,1,36);
+
+}
+*/
