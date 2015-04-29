@@ -7,27 +7,27 @@ int green2 = 3;
 int blue1 = 7;
 int blue2 = 8;
 
-enum states{
+enum toiletStates{
   FRI,
   TIL_OPTAGET,
   OPTAGET,
-  O2S,
+  TIL_STINKY,
   STINKY
 };
 
-states t1State;
-states t2State;
+toiletStates t1State;
+tolietStates t2State;
 
 unsigned long t1LockTime;
-unsigned long t1CoolTime;
+unsigned long t1StinkTime;
 unsigned long t2LockTime;
-unsigned long t2CoolTime;
+unsigned long t2StinkTime;
 // 1 min = 60000 milliseconds
 
 //time before activating the stink alert
-unsigned long stinkTime = 180000;
+unsigned long timeToStink = 5000;//180000;
 //time before the stink wears off
-unsigned long coolTime = 300000;
+unsigned long timeToClear = 5000;//300000;
 
 void setup(){
 
@@ -47,92 +47,68 @@ pinMode(but2, INPUT_PULLUP);
 void loop(){
   //First toilet
   switch(t1State){
-    case FRI:
-      digitalWrite(red1, LOW);
-      analogWrite(green1, 255);
-      if(digitalRead(but1) == LOW){
-        t1State = TIL_OPTAGET;
-      }
-      break;
-      
-    case TIL_OPTAGET:
-      t1LockTime = millis();
-      t1State = OPTAGET;
-      break;
-      
-    case OPTAGET:
-      analogWrite(red1, 255);
-      digitalWrite(green1, 0);
-      if(digitalRead(but1) == HIGH){
-        if(millis() - t1LockTime > stinkTime){
-          t1State = O2S;
-        }else{
-          t1State = FRI;
-        }
-      }
-      break;
-      
-    case O2S:
-      t1CoolTime = millis();
-      t1State = STINKY;
-      break;
-      
-    case STINKY:
-      if(digitalRead(but1) == LOW) t1State = OPTAGET;
-      
-      else if(millis() - t1CoolTime <= coolTime){
-        analogWrite(red1, 255);
-        analogWrite(green1, 100);
-      } else {
-        t1State = FRI;
-      }
-      break;
-    
-    
-  }
-  //Second toilet
+	case FRI:
+			digitalWrite(red1, LOW);
+			digitalWrite(green1, HIGH);
+			if(digitalRead(but1) == LOW) t1State = TIL_OPTAGET;
+			break;
+
+	case TIL_OPTAGET:
+			t1LockTime = millis();
+			t1State = OPTAGET;
+			break;
+
+	case OPTAGET:
+			digitalWrite(red1, HIGH);
+			digitalWrite(green1, 0);
+			if(digitalRead(but1) == HIGH){
+				if(millis() - t1LockTime > timeToStink) t1State = TIL_STINKY;
+				else t1State = FRI;
+				}
+			break;
+
+	case TIL_STINKY:
+			t1StinkTime = millis();
+			t1State = STINKY;
+			break;
+
+	case STINKY:
+			digitalWrite(red1, HIGH);
+			analogWrite(green1, 100);
+			else if(millis() - t1StinkTime > timeToClear) t1State = FRI;
+			if(digitalRead(but1) == LOW) t1State = TIL_OPTAGET;
+			break;
+
   switch(t2State){
-    case FRI:
-      digitalWrite(red2, LOW);
-      analogWrite(green2, 255);
-      if(digitalRead(but2) == LOW){
-        t2State = TIL_OPTAGET;
-      }
-      break;
-      
-    case TIL_OPTAGET:
-      t2LockTime = millis();
-      t2State = OPTAGET;
-      break;
-      
-    case OPTAGET:
-      analogWrite(red2, 255);
-      digitalWrite(green2, 0);
-      if(digitalRead(but2) == HIGH){
-        if(millis() - t2LockTime > stinkTime){
-          t2State = O2S;
-        }else{
-          t2State = FRI;
-        }
-      }
-      break;
-      
-    case O2S:
-      t2CoolTime = millis();
-      t2State = STINKY;
-      break;
-      
-    case STINKY:
-      if(digitalRead(but2) == LOW) t2State = TIL_OPTAGET;
-      else if(millis() - t2CoolTime <= coolTime){
-        analogWrite(red2, 255);
-        analogWrite(green2, 100);
-      } else {
-        t2State = FRI;
-      }
-      break;
-    
-    
-  }
-  
+	case FRI:
+			digitalWrite(red2, LOW);
+			digitalWrite(green2, HIGH);
+			if(digitalRead(but2) == LOW) t2State = TIL_OPTAGET;
+			break;
+
+	case TIL_OPTAGET:
+			t2LockTime = millis();
+			t2State = OPTAGET;
+			break;
+
+	case OPTAGET:
+			digitalWrite(red2, HIGH);
+			digitalWrite(green2, 0);
+			if(digitalRead(but2) == HIGH){
+				if(millis() - t2LockTime > timeToStink) t2State = TIL_STINKY;
+				else t2State = FRI;
+				}
+			break;
+
+	case TIL_STINKY:
+			t2StinkTime = millis();
+			t2State = STINKY;
+			break;
+
+	case STINKY:
+			digitalWrite(red2, HIGH);
+			analogWrite(green2, 100);
+			else if(millis() - t2StinkTime > timeToClear) t2State = FRI;
+			if(digitalRead(but2) == LOW) t2State = TIL_OPTAGET;
+			break;
 }
