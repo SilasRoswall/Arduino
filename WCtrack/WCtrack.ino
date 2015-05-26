@@ -16,6 +16,8 @@ Feel free to copy this code, suggestions for improvements are welcomed!
 ~418
 */
 
+#define debounceDelayMs 50
+
 //button mappings:
 int stall1 = 2;
 int stall2 = 4;
@@ -69,7 +71,7 @@ pinMode(stall2, INPUT_PULLUP);
 
 void loop(){
 
-
+  delay(debounceDelayMs);
   //First toilet
   switch(t1State){
 	case FRI:
